@@ -9,7 +9,7 @@
 #import "HRCycleView.h"
 
 #define kReuseID @"HRCycleView"
-#define kRepeatCount 100000
+#define kRepeatCount 10
 
 @interface HRCycleView ()
 
@@ -33,6 +33,31 @@
     [cycleView startTimer];
     return cycleView;
 }
+#pragma mark - 布局UI
+- (void)setFrame:(CGRect)frame
+{
+    [super setFrame:frame];
+    self.flowLayout.itemSize = self.frame.size;
+}
+
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+    self.pageController.hidden = _showIndicator ? !_showIndicator() : YES;
+    _collectionView.contentOffset = CGPointMake(self.flowLayout.itemSize.width * (kRepeatCount / 2) * self.itemCount(), 0);
+    _collectionView.contentInset = UIEdgeInsetsMake(0, 0, 0, 0);
+}
+
+#pragma mark - 定时器相关
+- (void)startTimer
+{
+    _timer = [NSTimer scheduledTimerWithTimeInterval:_duration  target:[hr_YYTextWeakProxy proxyWithTarget:self] selector:@selector(autoScroll) userInfo:nil repeats:YES];
+}
+
+- (void)invalidateTimer
+{
+    [_timer invalidate];
+}
 
 - (void)autoScroll
 {
@@ -45,12 +70,7 @@
     [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:YES];
 }
 
--(void)setFrame:(CGRect)frame
-{
-    [super setFrame:frame];
-    self.flowLayout.itemSize = self.frame.size;
-}
-
+#pragma mark - collectionView delegate
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
     return self.itemCount() * kRepeatCount;
@@ -66,31 +86,37 @@
     return cell;
 }
 
+#pragma mark - scrollView delegate
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
     //如果没有item 则直接返回
     if (self.itemCount() == 0) {
         return;
     }
+    
     //控制指示点的位置
     _currentIndex = (NSInteger)(scrollView.contentOffset.x/scrollView.bounds.size.width + 0.5);
     NSInteger  pageNum = _currentIndex % self.itemCount();
     self.pageController.currentPage = pageNum;
+    
+    //防止滚动到尽头
+    //--左滚
+    NSInteger leftNeedAdjustIndex = (kRepeatCount / 2 + 1) * self.itemCount();
+    if (scrollView.contentOffset.x == self.bounds.size.width * leftNeedAdjustIndex) {
+        NSInteger afterAdustIndex = (kRepeatCount / 2 ) * self.itemCount();
+        NSIndexPath * indexPath = [NSIndexPath indexPathForItem:afterAdustIndex inSection:0];
+        [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:NO];
+    }
+    //--右滚
+    NSInteger rightNeedAdjustIndex = (kRepeatCount / 2 ) * self.itemCount() - 1;
+    if (scrollView.contentOffset.x == self.bounds.size.width * rightNeedAdjustIndex) {
+        NSInteger afterAdustIndex = (kRepeatCount / 2 + 1) * self.itemCount() - 1;
+        NSIndexPath * indexPath = [NSIndexPath indexPathForItem:afterAdustIndex inSection:0];
+        [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:NO];
+    }
+    
 }
 
-- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView
-{
-    if (self.timer.valid) {//如果正在计时
-        NSInteger needResetIndex = (kRepeatCount / 2 + 1) * self.itemCount();
-        //超过中间位置 且是item个的整数倍 重新定位到中心位置 防止滚到底
-        if (_currentIndex >= needResetIndex && _currentIndex % self.itemCount() == 0) {
-            NSInteger midIndex = (kRepeatCount / 2 ) * self.itemCount();
-            NSIndexPath * indexPath = [NSIndexPath indexPathForItem:midIndex inSection:0];
-            [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:NO];
-            
-        }
-    }
-}
 
 - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
 {
@@ -100,24 +126,6 @@
 - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
 {
     [self startTimer];
-}
-
--(void)layoutSubviews
-{
-    [super layoutSubviews];
-    self.pageController.hidden = _showIndicator ? !_showIndicator() : YES;
-    _collectionView.contentOffset = CGPointMake(self.flowLayout.itemSize.width * (kRepeatCount / 2) * self.itemCount(), 0);
-    _collectionView.contentInset = UIEdgeInsetsMake(0, 0, 0, 0);
-}
-
-- (void)startTimer
-{
-    _timer = [NSTimer scheduledTimerWithTimeInterval:_duration  target:[hr_YYTextWeakProxy proxyWithTarget:self] selector:@selector(autoScroll) userInfo:nil repeats:YES];
-}
-
-- (void)invalidateTimer
-{
-    [_timer invalidate];
 }
 
 @end

@@ -10,6 +10,10 @@
 //类似tableView的方式去使用，不同点是用block替代了代理
 @interface HRCycleView : UIView<UICollectionViewDataSource,UICollectionViewDelegate>
 
+/**
+  * 快速创建对象
+  * duration 每次滚动间隔时间
+ */
 + (instancetype)cycleView:(NSTimeInterval)duration;
 /**
  * 页面的个数必须大于0 这个block必须赋值 (类似tableView必须返回cell的个数)
