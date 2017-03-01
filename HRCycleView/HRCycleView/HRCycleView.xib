@@ -29,6 +29,8 @@
                     <constraints>
                         <constraint firstAttribute="height" constant="30" id="Mkp-cm-mE2"/>
                     </constraints>
+                    <color key="pageIndicatorTintColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                    <color key="currentPageIndicatorTintColor" red="0.0" green="0.52549019610000003" blue="0.79215686269999996" alpha="1" colorSpace="calibratedRGB"/>
                 </pageControl>
             </subviews>
             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

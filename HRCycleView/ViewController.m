@@ -28,6 +28,7 @@
             customView = [[UIView alloc]init];
         }
         customView.backgroundColor = colors[index];
+        NSLog(@"%p",customView);
         return customView;
     };
     view.showIndicator = ^{

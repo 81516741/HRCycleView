@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+
 //类似tableView的方式去使用，不同点是用block替代了代理
 @interface HRCycleView : UIView<UICollectionViewDataSource,UICollectionViewDelegate>
 
@@ -34,13 +35,6 @@
 
 @end
 
-
-
-@interface UICollectionViewCell (HRCycleView)
-
-@property (nonatomic,strong) UIView * customView;
-
-@end
 
 @interface hr_YYTextWeakProxy : NSProxy
 

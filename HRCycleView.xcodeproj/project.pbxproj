@@ -430,6 +430,7 @@
 				6BD683481E6420BE00D502E3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		6BD683491E6420BE00D502E3 /* Build configuration list for PBXNativeTarget "HRCycleViewTests" */ = {
 			isa = XCConfigurationList;
@@ -438,6 +439,7 @@
 				6BD6834B1E6420BE00D502E3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

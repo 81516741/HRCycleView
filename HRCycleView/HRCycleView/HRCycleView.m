@@ -7,6 +7,7 @@
 //
 
 #import "HRCycleView.h"
+#import <objc/runtime.h>
 
 #define kReuseID @"HRCycleView"
 #define kRepeatCount 10
@@ -33,7 +34,7 @@
     [cycleView startTimer];
     return cycleView;
 }
-#pragma mark - 布局UI
+#pragma mark 布局UI
 - (void)setFrame:(CGRect)frame
 {
     [super setFrame:frame];
@@ -43,12 +44,13 @@
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-    self.pageController.hidden = _showIndicator ? !_showIndicator() : YES;
+    _pageController.hidden = _showIndicator ? !_showIndicator() : YES;
+    _pageController.numberOfPages = self.itemCount();
     _collectionView.contentOffset = CGPointMake(self.flowLayout.itemSize.width * (kRepeatCount / 2) * self.itemCount(), 0);
     _collectionView.contentInset = UIEdgeInsetsMake(0, 0, 0, 0);
 }
 
-#pragma mark - 定时器相关
+#pragma mark 定时器相关
 - (void)startTimer
 {
     _timer = [NSTimer scheduledTimerWithTimeInterval:_duration  target:[hr_YYTextWeakProxy proxyWithTarget:self] selector:@selector(autoScroll) userInfo:nil repeats:YES];
@@ -70,7 +72,7 @@
     [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:YES];
 }
 
-#pragma mark - collectionView delegate
+#pragma mark collectionView delegate 代理
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
     return self.itemCount() * kRepeatCount;
@@ -79,14 +81,14 @@
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
 {
     UICollectionViewCell * cell = [collectionView dequeueReusableCellWithReuseIdentifier:kReuseID forIndexPath:indexPath];
-    UIView * customView = self.fetchItem(indexPath.row % self.itemCount(),cell.customView);
+    UIView * customView = self.fetchItem(indexPath.row % self.itemCount(),objc_getAssociatedObject(cell, _cmd));
     customView.frame = cell.bounds;
-    cell.customView = customView;
+    objc_setAssociatedObject(cell, _cmd, customView, OBJC_ASSOCIATION_RETAIN);
     [cell addSubview:customView];
     return cell;
 }
 
-#pragma mark - scrollView delegate
+#pragma mark scrollView delegate 代理
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
     //如果没有item 则直接返回
@@ -130,21 +132,7 @@
 
 @end
 
-#import <objc/runtime.h>
-@implementation UICollectionViewCell (HRCycleView)
-
-- (void)setCustomView:(UIView *)customView
-{
-    objc_setAssociatedObject(self, @selector(customView), customView, OBJC_ASSOCIATION_RETAIN);
-}
-
-- (UIView *)customView
-{
-    return objc_getAssociatedObject(self, _cmd);
-}
-
-@end
-
+#pragma mark - 其他类
 @implementation hr_YYTextWeakProxy
 
 - (instancetype)initWithTarget:(id)target {
