@@ -10,7 +10,7 @@
 #import <objc/runtime.h>
 
 #define kReuseID @"HRCycleView"
-#define kRepeatCount 10
+#define kRepeatCount 1000
 
 @interface HRCycleView ()
 
@@ -68,6 +68,11 @@
         [self invalidateTimer];
         return;
     }
+    //因为定位到第一个，当用户真的拖到尽头了程序会蹦
+    if ((_currentIndex + 1) % self.itemCount() == 0) {
+        NSInteger desIndex = (kRepeatCount / 2 + 1) * self.itemCount() - 1;
+        _collectionView.contentOffset = CGPointMake(self.flowLayout.itemSize.width * desIndex, 0);
+    }
     NSIndexPath * indexPath = [NSIndexPath indexPathForItem:_currentIndex + 1 inSection:0];
     [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:YES];
 }
@@ -89,6 +94,9 @@
 }
 
 #pragma mark scrollView delegate 代理
+
+
+
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
     //如果没有item 则直接返回
@@ -100,23 +108,6 @@
     _currentIndex = (NSInteger)(scrollView.contentOffset.x/scrollView.bounds.size.width + 0.5);
     NSInteger  pageNum = _currentIndex % self.itemCount();
     self.pageController.currentPage = pageNum;
-    
-    //防止滚动到尽头
-    //--左滚
-    NSInteger leftNeedAdjustIndex = (kRepeatCount / 2 + 1) * self.itemCount();
-    if (scrollView.contentOffset.x == self.bounds.size.width * leftNeedAdjustIndex) {
-        NSInteger afterAdustIndex = (kRepeatCount / 2 ) * self.itemCount();
-        NSIndexPath * indexPath = [NSIndexPath indexPathForItem:afterAdustIndex inSection:0];
-        [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:NO];
-    }
-    //--右滚
-    NSInteger rightNeedAdjustIndex = (kRepeatCount / 2 ) * self.itemCount() - 1;
-    if (scrollView.contentOffset.x == self.bounds.size.width * rightNeedAdjustIndex) {
-        NSInteger afterAdustIndex = (kRepeatCount / 2 + 1) * self.itemCount() - 1;
-        NSIndexPath * indexPath = [NSIndexPath indexPathForItem:afterAdustIndex inSection:0];
-        [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionLeft animated:NO];
-    }
-    
 }
 
 
